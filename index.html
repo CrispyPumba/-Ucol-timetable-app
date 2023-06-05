@@ -74,7 +74,7 @@
     <h1>Timetable</h1>
     <div class="input-group">
       <label for="url">Enter URL:</label>
-      <input type="text" id="url" />
+      <input type="text" id="url" value="http://tt-current.ucol.ac.nz:8081/reporting/individual?weeks=23&identifier=PBNRG71%2F2023%2FFY3%20(A)&objectclass=student%20set&idtype=name&template=UCOL-Set-Staff" />
     </div>
     <div class="input-group">
       <label for="date">Date:</label>
@@ -109,11 +109,9 @@
     var currentDate = new Date().toISOString().split('T')[0];
     document.getElementById('date').value = currentDate;
 
-    // Check if there is a saved URL in the browser's local storage
+    // Retrieve the saved URL from the previous session
     var savedURL = localStorage.getItem('savedURL');
-    if (savedURL) {
-      document.getElementById('url').value = savedURL;
-    }
+    document.getElementById('url').value = savedURL || 'http://tt-current.ucol.ac.nz:8081/reporting/individual?weeks=23&identifier=PBNRG71%2F2023%2FFY3%20(A)&objectclass=student%20set&idtype=name&template=UCOL-Set-Staff';
 
     function displayWeek() {
       var dateInput = document.getElementById('date');
@@ -146,7 +144,7 @@
 
       modifiedURLInput.value = modifiedURL;
 
-      // Save the modified URL in the browser's local storage
+      // Save the modified URL for next viewing session
       localStorage.setItem('savedURL', modifiedURL);
     }
 
