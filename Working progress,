@@ -1,2 +1,3 @@
 MLHttpRequest method for preview and save pipcture is not functioning due to CORS restrictions
 Switching to fetch API- or somthing else 
+deasbled preview and save feture for now 
