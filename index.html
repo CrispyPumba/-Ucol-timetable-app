@@ -61,47 +61,6 @@
       font-weight: bold;
     }
 
-    #previewContainer {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 9999;
-      background-color: rgba(0, 0, 0, 0.8);
-      display: none;
-    }
-
-.previewBox {
-  background-color: #f2f2f2;
-  width: 90%;
-  height: 90%;
-  margin: 5vh auto;
-  padding: 20px;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-}
-
-.previewHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.previewClose {
-  cursor: pointer;
-  color: #555;
-  font-size: 20px;
-}
-
-#previewFrame {
-  flex: 1;
-  border: none;
-}
-
-
     /* Responsive design */
     @media screen and (max-width: 600px) {
       .container {
@@ -115,7 +74,7 @@
     <h1>Timetable</h1>
     <div class="input-group">
       <label for="url">Enter URL:</label>
-      <input type="text" id="url" value="http://tt-current.ucol.ac.nz:8081/reporting/individual?weeks=24&identifier=PBNRG71/2023/FY3%20(A)&objectclass=student%20set&idtype=name&template=UCOL-Set-Staff" />
+      <input type="text" id="url" />
     </div>
     <div class="input-group">
       <label for="date">Date:</label>
@@ -127,51 +86,86 @@
         <option value="A">A</option>
         <option value="B">B</option>
         <option value="C">C</option>
-        <option value="D">C</option>
+        <option value="D">D</option>
+        <option value="E">E</option>
+        <option value="ALL">ALL</option>
       </select>
     </div>
     <div class="input-group">
-      <button class="button" onclick="modifyURL()">Generate Timetable</button>
+      <label for="week">Week:</label>
+      <span id="weekNumber"></span>
     </div>
-    <div id="previewContainer">
-      <div class="previewBox">
-        <div class="previewHeader">
-          <h2>Timetable Preview</h2>
-          <span class="previewClose" onclick="closePreview()">X</span>
-        </div>
-        <iframe id="previewFrame"></iframe>
-      </div>
+    <button class="button" onclick="modifyURL()">Modify URL</button>
+    <div class="input-group">
+      <label for="modifiedURL">Modified URL:</label>
+      <input type="text" id="modifiedURL" />
+    </div>
+    <div class="button-container">
+      <button class="button" onclick="openModifiedURL()">Open Modified URL in New Tab</button>
     </div>
   </div>
 
   <script>
+    var currentDate = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = currentDate;
+
+    // Check if there is a saved URL in the browser's local storage
+    var savedURL = localStorage.getItem('savedURL');
+    if (savedURL) {
+      document.getElementById('url').value = savedURL;
+    }
+
+    function displayWeek() {
+      var dateInput = document.getElementById('date');
+      var weekNumber = document.getElementById('weekNumber');
+
+      var date = new Date(dateInput.value);
+      var weeks = getWeeksInYear(date);
+
+      weekNumber.textContent = weeks;
+    }
+
     function modifyURL() {
       var urlInput = document.getElementById('url');
       var dateInput = document.getElementById('date');
       var streamInput = document.getElementById('stream');
+      var modifiedURLInput = document.getElementById('modifiedURL');
 
-      var modifiedURL = urlInput.value + '&date=' + dateInput.value + '&stream=' + streamInput.value;
+      var url = urlInput.value;
+      var date = new Date(dateInput.value);
+      var stream = streamInput.value;
 
-      document.getElementById('previewFrame').src = modifiedURL;
-      document.getElementById('previewContainer').style.display = 'block';
+      if (isNaN(date)) {
+        alert("Please enter a valid date!");
+        return;
+      }
 
-      setTimeout(captureScreenshot, 2000);
+      var weeks = getWeeksInYear(date);
+      var modifiedURL = url.replace(/weeks=\d+/, 'weeks=' + weeks);
+      modifiedURL = modifiedURL.replace(/(identifier=)[^&]+/, '$1' + encodeURIComponent('PBNRG71/2023/FY3 (' + stream + ')'));
+
+      modifiedURLInput.value = modifiedURL;
+
+      // Save the modified URL in the browser's local storage
+      localStorage.setItem('savedURL', modifiedURL);
     }
 
-    function captureScreenshot() {
-      html2canvas(document.getElementById('previewFrame')).then(function(canvas) {
-        var link = document.createElement('a');
-        link.href = canvas.toDataURL();
-        link.download = 'screenshot.png';
-        link.click();
-      });
+    function openModifiedURL() {
+      var modifiedURL = document.getElementById('modifiedURL').value;
+      if (modifiedURL) {
+        window.open(modifiedURL, '_blank');
+      } else {
+        alert("Please modify the URL first!");
+      }
     }
 
-    function closePreview() {
-      document.getElementById('previewContainer').style.display = 'none';
+    function getWeeksInYear(date) {
+      var yearStart = new Date(date.getFullYear(), 0, 1);
+      var weekNumber = Math.ceil(((date - yearStart) / 86400000 + yearStart.getDay() + 1) / 7);
+      return weekNumber;
     }
+
+    document.getElementById('date').addEventListener('input', displayWeek);
   </script>
-
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </body>
 </html>
